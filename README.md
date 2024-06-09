@@ -1,4 +1,4 @@
-# Aimify Aimbot
+# Aimify | Aimbot
 
 A sophisticated aimbot written in C++ with learning in mind. 90% Of lines are commented, except for the memory and vector file.
 

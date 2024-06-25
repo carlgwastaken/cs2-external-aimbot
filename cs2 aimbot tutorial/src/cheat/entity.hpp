@@ -8,11 +8,11 @@ inline memify mem("cs2.exe");
 
 namespace offset
 {
-	constexpr std::ptrdiff_t dwEntityList = 0x195C460;
-	constexpr std::ptrdiff_t dwViewMatrix = 0x19BE600;
-	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x17C9468;
+        constexpr std::ptrdiff_t dwEntityList = 0x19B49B8;
+	constexpr std::ptrdiff_t dwViewMatrix = 0x1A16A60;
+	constexpr std::ptrdiff_t dwLocalPlayerPawn = 0x181A9B8;
 
-	constexpr std::ptrdiff_t m_hPawn = 0x7DC; // CHandle<C_BasePlayerPawn> might also be 0x5FC.
+	constexpr std::ptrdiff_t m_hPawn = 0x5FC; // not sure if it's m_hPawn, or m_hPlayerPawn.
 
 	constexpr std::ptrdiff_t m_iHealth = 0x324;
 	constexpr std::ptrdiff_t m_iTeamNum = 0x3C3;

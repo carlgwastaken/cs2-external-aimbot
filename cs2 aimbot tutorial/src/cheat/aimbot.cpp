@@ -14,17 +14,13 @@ void Aimbot::doAimbot()
 	// clear our playerPositions vector to remove old players
 	playerPositions.clear();
 
-	for (auto& player : reader.playerList)
+	for (const auto& player : reader.playerList)
 	{
 		// get the 3D position of the player we're CURRENTLY looping through.
 		Vector playerPosition = mem.Read<Vector>(player.pCSPlayerPawn + offset::m_vOldOrigin);
 
 		// get the spotted state struct
 		uintptr_t spottedState = mem.Read<uintptr_t>(player.pCSPlayerPawn + offset::m_entitySpottedState);
-
-		// check if we can see the player
-		if (!mem.Read<bool>(spottedState + 0x8))
-			continue;
 
 		// create a headPosition Vector, this is kind of ghetto but it works fine.
 		Vector headPos = { playerPosition.x += 0.0, playerPosition.y += 0.0, playerPosition.z += 65.0f };
@@ -38,6 +34,8 @@ void Aimbot::doAimbot()
 			// add the filtered player to our vector
 			playerPositions.push_back(h);
 		}
+		else
+			printf("Failed w2s.\n");
 	}
 
 	// check if the user is holding the right mouse button.
@@ -94,7 +92,7 @@ Vector Aimbot::findClosest(const std::vector<Vector> playerPositions)
 void Aimbot::MoveMouseToPlayer(Vector position)
 {
 	// check if the position is valid, make a function for this for better practice. this is also just ugly.
-	if (position.x == 0.0f && position.y == 0.0f && position.z == 0.0f)
+	if (position.IsZero())
 		return;
 
 	// get the center of our screen.

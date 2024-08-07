@@ -32,21 +32,47 @@ private:
 
 	uintptr_t GetProcessId(std::string_view processName)
 	{
-		PROCESSENTRY32 en = { };
-		en.dwSize = sizeof(en);
+		if (!handle) {
+			// define processentry32
+			PROCESSENTRY32 pe;
+			pe.dwSize = sizeof(PROCESSENTRY32);
 
-		const auto ss = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, processID); // snapshot
+			// create a snapshot handle
+			HANDLE ss = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
 
-		uintptr_t result = 0; // init to 0 so we can check later if it's changed.
+			// loop through all process
+			while (Process32Next(ss, &pe)) {
+				// compare program names to processName
+				if (!processName.compare(pe.szExeFile)) {
+					processID = pe.th32ProcessID;
+					return processID;
+				}
+			}
+		}
 
-		while (Process32Next(ss, &en))
-			if (!processName.compare(en.szExeFile))
-				result = en.th32ProcessID; // hols processID within processentry32
+		DWORD ids[1024];
+		DWORD neededId;
 
-		if (ss)
-			CloseHandle(ss);
+		if (EnumProcesses(ids, sizeof(ids), &neededId))
+		{
+			int processCount = neededId / sizeof(DWORD);
 
-		return result;
+			for (int i = 0; i < processCount; ++i)
+			{
+				if (handle != 0)
+				{
+					char moduleName[MAX_PATH];
+					if (GetModuleBaseNameA(handle, nullptr, moduleName, sizeof(moduleName)))
+					{
+						if (!processName.compare(moduleName)) {
+							return ids[i];
+						}
+					}
+				}
+			}
+		}
+
+		return 0;
 	}
 
 	// make BaseModule private since i'd rather shorthen name in public, and just return this function but thats your choice
@@ -72,6 +98,7 @@ private:
 				}
 			}
 		}
+
 		return 0;
 	}
 public:
@@ -82,7 +109,7 @@ public:
 		VRead = (pNtReadVirtualMemory)GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtReadVirtualMemory");
 		VWrite = (pNtWriteVirtualMemory)GetProcAddress(GetModuleHandleA("ntdll.dll"), "NtWriteVirtualMemory");
 
-		processID = GetProcessId(processName); // define processId
+		processID = GetProcessId(processName);
 
 		if (processID != 0)
 		{
@@ -99,8 +126,6 @@ public:
 	// deconstructor, you can just use a void Exit(), which is less to type but whatever
 	~memify()
 	{
-		printf("Closing handle.\n");
-
 		if (handle)
 			CloseHandle(handle);
 
@@ -123,7 +148,7 @@ public:
 		return buffer;
 	}
 
-	template <typename T> // use types which are defined later on, so it's compatible with alot of shit.
+	template <typename T>
 	T Write(uintptr_t address, T value)
 	{
 		VWrite(handle, (void*)address, &value, sizeof(T), NULL);
@@ -134,19 +159,20 @@ public:
 	bool ReadRaw(uintptr_t address, void* buffer, size_t size)
 	{
 		SIZE_T bytesRead;
-		if (VRead(handle, (PVOID)address, buffer, static_cast<ULONG>(size), (PULONG)&bytesRead))
+		if (VRead(handle, (void*)address, buffer, static_cast<ULONG>(size), (PULONG)&bytesRead))
 			return bytesRead = size;
 
 		return false;
 	}
 
 	// utilities, shit that isn't required but nice to have
+
 	bool ProcessIsOpen(const std::string_view processName)
 	{
 		return GetProcessId(processName) != 0;
 	}
 
-	bool InForeground(std::string windowName = "Counter-Strike 2")
+	bool InForeground()
 	{
 		// just takes Counter-Strike 2 but change to whatever u want, or implement an input you can do that too
 		// maybe get the foreground window and then compare it to your own window, use processID, anything u want
@@ -155,7 +181,7 @@ public:
 		char title[256];
 		GetWindowText(current, title, sizeof(title));
 
-		if (strstr(title, windowName.data()) != nullptr)
+		if (strstr(title, "Counter-Strike 2") != nullptr)
 			return true;
 
 		return false;

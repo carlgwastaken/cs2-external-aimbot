@@ -51,3 +51,7 @@ const bool Vector::world_to_screen(view_matrix_t vm, Vector& in, Vector& out)
     
     return true;
 }
+
+const bool Vector::IsZero() {
+    return x == 0.0f && y == 0.0f && z == 0.0f;
+}

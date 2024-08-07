@@ -4,11 +4,11 @@ void Reader::ThreadLoop()
 {
 	// get client
 	while (!client) {
-		Sleep(15);
+		std::this_thread::sleep_for(std::chrono::milliseconds(15));
 
 		client = mem.GetBase("client.dll");
 
-		std::cout << "client" << std::hex << client << std::endl;
+		std::cout << "client.dll " << std::hex << client << std::endl;
 	}
 
 	while (true)
@@ -32,16 +32,19 @@ void Reader::FilterPlayers()
 
 	auto entityList = mem.Read<uintptr_t>(client + offset::dwEntityList);
 
-	auto localPlayerPtr = mem.Read<uintptr_t>(client + offset::dwLocalPlayerPawn);
+	if (!entityList)
+		return;
+
+	auto localPawn = mem.Read<uintptr_t>(client + offset::dwLocalPlayerPawn);
 
 	// check swedz video for an explanation of this, i do not have the patience to write out all those comments :(
-	for (int i = 0; i < 64; ++i)
+	for (int i = 0; i <= 64; ++i)
 	{
 		uintptr_t list_entry1 = mem.Read<uintptr_t>(entityList + (8 * (i & 0x7FFF) >> 9) + 16);
 
 		uintptr_t playerController = mem.Read<uintptr_t>(list_entry1 + 120 * (i & 0x1FF));
 
-		uint32_t playerPawn = mem.Read<uint32_t>(playerController + offset::m_hPawn);
+		uint32_t playerPawn = mem.Read<uint32_t>(playerController + offset::m_hPlayerPawn);
 
 		uintptr_t list_entry2 = mem.Read<uintptr_t>(entityList + 0x8 * ((playerPawn & 0x7FFF) >> 9) + 16);
 
@@ -54,7 +57,7 @@ void Reader::FilterPlayers()
 
 		int team = mem.Read<int>(pCSPlayerPawnPtr + offset::m_iTeamNum);
 
-		if (team == mem.Read<int>(localPlayerPtr + offset::m_iTeamNum))
+		if (team == mem.Read<int>(localPawn + offset::m_iTeamNum))
 			continue;
 
 		// save the address of the pawn we're on for later use, possibly reading positions.

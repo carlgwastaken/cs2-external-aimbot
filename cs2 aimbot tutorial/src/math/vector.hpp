@@ -30,6 +30,8 @@ public:
 	// 3d -> 2d, explanations already exist.
 	const static bool world_to_screen(view_matrix_t view_matrix, Vector& in, Vector& out);
 
+	const bool IsZero();
+
 	float x, y, z;
 };
 

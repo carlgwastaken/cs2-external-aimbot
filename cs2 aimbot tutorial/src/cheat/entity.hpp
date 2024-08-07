@@ -19,7 +19,7 @@ namespace offset
 
 	constexpr std::ptrdiff_t m_vOldOrigin = 0x1274;
 
-	constexpr std::ptrdiff_t m_entitySpottedState = 0x2278; // 0x8 m_bSpotted
+	constexpr std::ptrdiff_t m_entitySpottedState = 0x2288; // 0x8 m_bSpotted
 }
 
 // create an entity class for our vector, since we need to be able to push_back().

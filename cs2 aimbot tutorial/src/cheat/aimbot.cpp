@@ -19,9 +19,6 @@ void Aimbot::doAimbot()
 		// get the 3D position of the player we're CURRENTLY looping through.
 		Vector playerPosition = mem.Read<Vector>(player.pCSPlayerPawn + offset::m_vOldOrigin);
 
-		// get the spotted state struct
-		uintptr_t spottedState = mem.Read<uintptr_t>(player.pCSPlayerPawn + offset::m_entitySpottedState);
-
 		// create a headPosition Vector, this is kind of ghetto but it works fine.
 		Vector headPos = { playerPosition.x += 0.0, playerPosition.y += 0.0, playerPosition.z += 65.0f };
 
@@ -34,8 +31,6 @@ void Aimbot::doAimbot()
 			// add the filtered player to our vector
 			playerPositions.push_back(h);
 		}
-		else
-			printf("Failed w2s.\n");
 	}
 
 	// check if the user is holding the right mouse button.
